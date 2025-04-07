@@ -1,30 +1,51 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using TaskMaster.Models;
 
 namespace TaskMaster.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
     [ObservableProperty]
-    private int count;
+    private string taskTitle;
+    [ObservableProperty]
+    private string taskDescription;
 
-    private string counterText = "Click me";
-    public string CounterText
-    {
-        get => counterText;
-        set => SetProperty(ref counterText, value);
-    }
+    //private int count;
+    //private string counterText = "Click me";
+
+
+    public ObservableCollection<TaskModel> Tasks { get; set; } = new();
+
+    //public string CounterText
+    //{
+    //    get => counterText;
+    //    set => SetProperty(ref counterText, value);
+    //}
 
     public MainViewModel()
     {
-        CounterText = "Click me"; // Valeur initiale
+        //CounterText = "Click me";
+    }
+
+
+    [RelayCommand]
+    private void AddTask()
+    {
+        if (!string.IsNullOrEmpty(TaskTitle) && !string.IsNullOrWhiteSpace(TaskDescription))
+        {
+            Tasks.Add(new TaskModel { Title = TaskTitle, Description = TaskDescription });
+
+            TaskTitle = string.Empty;
+            TaskDescription = string.Empty;
+        }
     }
 
     [RelayCommand]
-    private void IncrementCounter()
+    private void DeleteTask(TaskModel task)
     {
-        Count++;
-        CounterText = Count == 1 ? $"Clicked {Count} time" : $"Clicked {Count} times";
-        SemanticScreenReader.Announce(CounterText); // Accessibilité
+        Tasks.Remove(task);
     }
+
 }

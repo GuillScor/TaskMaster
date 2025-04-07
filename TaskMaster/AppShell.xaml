@@ -9,7 +9,7 @@
     Title="TaskMaster">
 
     <ShellContent
-        Title="Home"
+        Title="TaskMaster"
         ContentTemplate="{DataTemplate views:MainPage}"
         Route="MainPage" />
 </Shell>

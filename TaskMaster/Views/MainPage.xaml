@@ -1,19 +1,34 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="TaskMaster.Views.MainPage">
+             x:Class="TaskMaster.Views.MainPage"
+             x:Name="MainPageRef">
     <ScrollView>
         <VerticalStackLayout Padding="30,0" Spacing="25">
-            <Image Source="dotnet_bot.png" HeightRequest="185" Aspect="AspectFit"
-                   SemanticProperties.Description="dot net bot in a hovercraft number nine" />
-            <Label Text="Hello, World!" Style="{StaticResource Headline}"
-                   SemanticProperties.HeadingLevel="Level1" />
-            <Label Text="Welcome to .NET Multi-platform App UI" Style="{StaticResource SubHeadline}"
-                   SemanticProperties.HeadingLevel="Level2"
-                   SemanticProperties.Description="Welcome to dot net Multi platform App U I" />
-            <Button Text="{Binding CounterText}"
-                    Command="{Binding IncrementCounterCommand}"
+            <Entry Placeholder="Saisir un titre" Text="{Binding TaskTitle}"/>
+            <Entry Placeholder="Saisir une description" Text="{Binding TaskDescription}"/>
+            
+            <Button Text="Ajouter une tâche"
+                    Command="{Binding AddTaskCommand}"
                     HorizontalOptions="Fill" />
+
+            <CollectionView ItemsSource="{Binding Tasks}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame BorderColor="Gray" Padding="10" Margin="5">
+                            <VerticalStackLayout>
+                                <Label Text="{Binding Title}" FontSize="Medium" />
+                                <Label Text="{Binding Description}" FontSize="Small" />
+                                <Button Text="Supprimer"
+                                Command="{Binding BindingContext.DeleteTaskCommand, Source={x:Reference Name=MainPageRef}}"
+                                CommandParameter="{Binding .}" 
+                                BackgroundColor="Red" TextColor="White"
+                                HorizontalOptions="End"/>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
