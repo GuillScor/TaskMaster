@@ -1,0 +1,16 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TaskMaster.Views.TaskDetailPage"
+             x:Name="TaskDetailPageRef"
+             Title="Détail de la tâche">
+
+    <VerticalStackLayout Padding="20" Spacing="20">
+        <Label Text="Titre :" FontSize="16" FontAttributes="Bold" />
+        <Label Text="{Binding Task.Title}" FontSize="20" />
+
+        <Label Text="Description :" FontSize="16" FontAttributes="Bold" />
+        <Label Text="{Binding Task.Description}" FontSize="18" />
+
+        <Button Text="Retour" Command="{Binding ReturnCommand}" />
+    </VerticalStackLayout>
+</ContentPage>
