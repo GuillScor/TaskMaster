@@ -36,7 +36,7 @@ public partial class MainViewModel : ObservableObject
     {
         if (!string.IsNullOrEmpty(TaskTitle) && !string.IsNullOrWhiteSpace(TaskDescription))
         {
-            Tasks.Add(new TaskModel { Title = TaskTitle, Description = TaskDescription });
+            Tasks.Add(new TaskModel { Titre = TaskTitle, Description = TaskDescription });
 
             TaskTitle = string.Empty;
             TaskDescription = string.Empty;
