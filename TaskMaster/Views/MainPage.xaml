@@ -19,10 +19,13 @@
                             <VerticalStackLayout>
                                 <Label Text="{Binding Title}" FontSize="Medium" />
                                 <Label Text="{Binding Description}" FontSize="Small" />
+                                <Button Text="Détails"
+                                Command="{Binding BindingContext.ShowDetailsCommand, Source={x:Reference MainPageRef}}"
+                                CommandParameter="{Binding .}"
+                                HorizontalOptions="End"/>
                                 <Button Text="Supprimer"
-                                Command="{Binding BindingContext.DeleteTaskCommand, Source={x:Reference Name=MainPageRef}}"
-                                CommandParameter="{Binding .}" 
-                                BackgroundColor="Red" TextColor="White"
+                                Command="{Binding BindingContext.DeleteTaskCommand, Source={x:Reference MainPageRef}}"
+                                CommandParameter="{Binding .}"
                                 HorizontalOptions="End"/>
                             </VerticalStackLayout>
                         </Frame>

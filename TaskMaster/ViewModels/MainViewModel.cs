@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TaskMaster.Models;
+using TaskMaster.Views;
 
 namespace TaskMaster.ViewModels;
 
@@ -39,6 +40,15 @@ public partial class MainViewModel : ObservableObject
 
             TaskTitle = string.Empty;
             TaskDescription = string.Empty;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ShowDetails(TaskModel task)
+    {
+        if (task != null)
+        {
+            await Shell.Current.Navigation.PushAsync(new TaskDetailPage(task));
         }
     }
 
