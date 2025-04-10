@@ -5,7 +5,7 @@ namespace TaskMaster.Views;
 
 public partial class TaskDetailPage : ContentPage
 {
-    public TaskDetailPage(TaskModel task)
+    public TaskDetailPage(Tache task)
     {
         InitializeComponent();
         BindingContext = new TaskDetailViewModel(task);

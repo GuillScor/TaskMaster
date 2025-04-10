@@ -10,10 +10,9 @@ namespace TaskMaster.Data
 {
     public class AppDbContext : DbContext
     {
-        // Constructeur : passe les options de DbContext à la base de classe
+        public DbSet<Tache> Taches { get; set; }
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        // Déclare les tables/entités de la base de données
-        public DbSet<TaskModel> Tasks { get; set; }
+
     }
 }

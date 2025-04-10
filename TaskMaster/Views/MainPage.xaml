@@ -17,7 +17,7 @@
                     <DataTemplate>
                         <Frame BorderColor="Gray" Padding="10" Margin="5">
                             <VerticalStackLayout>
-                                <Label Text="{Binding Title}" FontSize="Medium" />
+                                <Label Text="{Binding Titre}" FontSize="Medium" />
                                 <Label Text="{Binding Description}" FontSize="Small" />
                                 <Button Text="Détails"
                                 Command="{Binding BindingContext.ShowDetailsCommand, Source={x:Reference MainPageRef}}"

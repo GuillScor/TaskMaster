@@ -6,7 +6,7 @@
 
     <VerticalStackLayout Padding="20" Spacing="20">
         <Label Text="Titre :" FontSize="16" FontAttributes="Bold" />
-        <Label Text="{Binding Task.Title}" FontSize="20" />
+        <Label Text="{Binding Task.Titre}" FontSize="20" />
 
         <Label Text="Description :" FontSize="16" FontAttributes="Bold" />
         <Label Text="{Binding Task.Description}" FontSize="18" />

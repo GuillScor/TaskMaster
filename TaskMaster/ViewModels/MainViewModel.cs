@@ -3,59 +3,103 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TaskMaster.Models;
 using TaskMaster.Views;
+using TaskMaster.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace TaskMaster.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
+    private AppDbContext dbContext; //Database
+
     [ObservableProperty]
     private string taskTitle;
     [ObservableProperty]
     private string taskDescription;
 
-    //private int count;
-    //private string counterText = "Click me";
+    public ObservableCollection<Tache> Tasks { get; set; } = new();
 
-
-    public ObservableCollection<TaskModel> Tasks { get; set; } = new();
-
-    //public string CounterText
-    //{
-    //    get => counterText;
-    //    set => SetProperty(ref counterText, value);
-    //}
-
-    public MainViewModel()
+    public MainViewModel(AppDbContext context)
     {
-        //CounterText = "Click me";
+        dbContext = context;
+        LoadTasks();        
     }
 
-
-    [RelayCommand]
-    private void AddTask()
+    private async void LoadTasks()
     {
-        if (!string.IsNullOrEmpty(TaskTitle) && !string.IsNullOrWhiteSpace(TaskDescription))
+        try
         {
-            Tasks.Add(new TaskModel { Titre = TaskTitle, Description = TaskDescription });
+            Console.WriteLine($"Load tasks");
+            var tasks = await dbContext.Taches.ToListAsync();
 
-            TaskTitle = string.Empty;
-            TaskDescription = string.Empty;
+            Tasks.Clear();
+            foreach (var task in tasks)
+            {
+                Tasks.Add( task );
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors du chargement des tâches : {ex.Message}");
         }
     }
 
+
     [RelayCommand]
-    private async Task ShowDetails(TaskModel task)
+    private async void AddTask()
+    {
+        if (string.IsNullOrEmpty(TaskTitle))
+        {
+            Console.WriteLine("Le titre est requis.");
+            return;
+        }
+
+        var newTask = new Tache
+        {
+            Titre = TaskTitle,
+            Description = TaskDescription
+        };
+
+        try
+        {
+            dbContext.Taches.Add(newTask);
+            await dbContext.SaveChangesAsync();
+
+            Tasks.Add(newTask);
+
+            TaskTitle = string.Empty;
+            TaskDescription = string.Empty;
+
+            Console.WriteLine("Tâche ajoutée.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de l'ajout de la tâche : {ex.Message}");
+        }
+    }
+
+
+
+    [RelayCommand]
+    private async Task ShowDetails(Tache task)
     {
         if (task != null)
         {
+            // Naviguer vers la page de détails, en passant la tâche sélectionnée
             await Shell.Current.Navigation.PushAsync(new TaskDetailPage(task));
         }
     }
 
     [RelayCommand]
-    private void DeleteTask(TaskModel task)
+    private async void DeleteTask(Tache task)
     {
-        Tasks.Remove(task);
+        if (task != null)
+        {
+            dbContext.Taches.Remove(task);
+            await dbContext.SaveChangesAsync();
+
+            Tasks.Remove(task);
+        };
     }
 
 }
