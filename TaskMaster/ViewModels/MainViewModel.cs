@@ -12,6 +12,32 @@ public partial class MainViewModel : ObservableObject
 {
     private AppDbContext dbContext; //Database
 
+
+    [ObservableProperty]
+    private string nom;
+
+    [ObservableProperty]
+    private string prenom;
+
+    [ObservableProperty]
+    private string email;
+
+    [ObservableProperty]
+    private string motDePasse;
+
+    [ObservableProperty]
+    private bool afficherPopupInscription = true; // Affichage de l'overlay
+    public bool PopupMasquee => !AfficherPopupInscription;
+
+    // Surcharge du setter pour mettre à jour la visibilité de l'autre propriété automatiquement
+    partial void OnAfficherPopupInscriptionChanged(bool oldValue, bool newValue)
+    {
+        // Cette ligne permet de notifier que la valeur de PopupMasquee a changé
+        OnPropertyChanged(nameof(PopupMasquee));
+    }
+
+
+
     [ObservableProperty]
     private string taskTitle;
     [ObservableProperty]
@@ -24,6 +50,55 @@ public partial class MainViewModel : ObservableObject
         dbContext = context;
         LoadTasks();        
     }
+
+    [RelayCommand]
+    private async Task AddUtilisateur()
+    {
+        if (string.IsNullOrWhiteSpace(Nom) || string.IsNullOrWhiteSpace(Prenom) ||
+            string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(MotDePasse))
+        {
+            await Application.Current.MainPage.DisplayAlert("Erreur", "Veuillez remplir tous les champs.", "OK");
+            return;
+        }
+
+        try
+        {
+            // Vérifier si l'email est déjà utilisé
+            var existe = await dbContext.Utilisateurs.AnyAsync(u => u.Email == Email);
+            if (existe)
+            {
+                await Application.Current.MainPage.DisplayAlert("Erreur", "Cet email est déjà utilisé.", "OK");
+                return;
+            }
+
+            var utilisateur = new Utilisateur
+            {
+                Nom = Nom,
+                Prenom = Prenom,
+                Email = Email,
+                MotDePasse = MotDePasse
+            };
+
+            dbContext.Utilisateurs.Add(utilisateur);
+            await dbContext.SaveChangesAsync();
+
+            Console.WriteLine("Utilisateur ajouté !");
+            AfficherPopupInscription = false;
+        }
+        catch (Exception ex)
+        {
+            var fullMessage = ex.Message;
+            if (ex.InnerException != null)
+            {
+                fullMessage += "\nDétails internes : " + ex.InnerException.Message;
+            }
+
+            Console.WriteLine($"Erreur lors de l'inscription : {fullMessage}");
+            await Application.Current.MainPage.DisplayAlert("Erreur", $"Exception : {fullMessage}", "OK");
+        }
+    }
+
+
 
     private async void LoadTasks()
     {

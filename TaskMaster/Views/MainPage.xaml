@@ -3,35 +3,68 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TaskMaster.Views.MainPage"
              x:Name="MainPageRef">
-    <ScrollView>
-        <VerticalStackLayout Padding="30,0" Spacing="25">
-            <Entry Placeholder="Saisir un titre" Text="{Binding TaskTitle}"/>
-            <Entry Placeholder="Saisir une description" Text="{Binding TaskDescription}"/>
-            
-            <Button Text="Ajouter une tâche"
-                    Command="{Binding AddTaskCommand}"
-                    HorizontalOptions="Fill" />
 
-            <CollectionView ItemsSource="{Binding Tasks}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Frame BorderColor="Gray" Padding="10" Margin="5">
-                            <VerticalStackLayout>
-                                <Label Text="{Binding Titre}" FontSize="Medium" />
-                                <Label Text="{Binding Description}" FontSize="Small" />
-                                <Button Text="Détails"
-                                Command="{Binding BindingContext.ShowDetailsCommand, Source={x:Reference MainPageRef}}"
-                                CommandParameter="{Binding .}"
-                                HorizontalOptions="End"/>
-                                <Button Text="Supprimer"
-                                Command="{Binding BindingContext.DeleteTaskCommand, Source={x:Reference MainPageRef}}"
-                                CommandParameter="{Binding .}"
-                                HorizontalOptions="End"/>
-                            </VerticalStackLayout>
-                        </Frame>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </VerticalStackLayout>
-    </ScrollView>
+    <Grid>
+
+        <!-- Interface principale -->
+        <ScrollView IsEnabled="{Binding AfficherPopupInscription}">
+            <VerticalStackLayout Padding="30,0" Spacing="25">
+                <Entry Placeholder="Saisir un titre" Text="{Binding TaskTitle}" />
+                <Entry Placeholder="Saisir une description" Text="{Binding TaskDescription}" />
+
+                <Button Text="Ajouter une tâche"
+                        Command="{Binding AddTaskCommand}"
+                        HorizontalOptions="Fill" />
+
+                <CollectionView ItemsSource="{Binding Tasks}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame BorderColor="Gray" Padding="10" Margin="5">
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Titre}" FontSize="Medium" />
+                                    <Label Text="{Binding Description}" FontSize="Small" />
+                                    <Button Text="Détails"
+                                            Command="{Binding BindingContext.ShowDetailsCommand, Source={x:Reference MainPageRef}}"
+                                            CommandParameter="{Binding .}"
+                                            HorizontalOptions="End"/>
+                                    <Button Text="Supprimer"
+                                            Command="{Binding BindingContext.DeleteTaskCommand, Source={x:Reference MainPageRef}}"
+                                            CommandParameter="{Binding .}"
+                                            HorizontalOptions="End"/>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Overlay d'inscription -->
+        <Grid BackgroundColor="#AA000000"
+              IsVisible="{Binding AfficherPopupInscription}"
+              Padding="30"
+              VerticalOptions="Center"
+              HorizontalOptions="Center">
+
+            <Frame BackgroundColor="White"
+                   CornerRadius="10"
+                   Padding="20"
+                   WidthRequest="300"
+                   VerticalOptions="Center">
+
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Inscription" FontSize="Large" HorizontalOptions="Center" />
+                    <Entry Placeholder="Nom" Text="{Binding Nom}" />
+                    <Entry Placeholder="Prénom" Text="{Binding Prenom}" />
+                    <Entry Placeholder="Email" Text="{Binding Email}" />
+                    <Entry Placeholder="Mot de passe" Text="{Binding MotDePasse}" IsPassword="True" />
+
+                    <Button Text="S'inscrire"
+                            Command="{Binding AddUtilisateurCommand}" />
+
+                </VerticalStackLayout>
+            </Frame>
+        </Grid>
+
+    </Grid>
 </ContentPage>
