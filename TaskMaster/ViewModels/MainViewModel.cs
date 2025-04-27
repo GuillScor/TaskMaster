@@ -10,8 +10,7 @@ namespace TaskMaster.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    private AppDbContext dbContext; //Database
-
+    private AppDbContext dbContext; // Database
 
     [ObservableProperty]
     private string nom;
@@ -26,7 +25,13 @@ public partial class MainViewModel : ObservableObject
     private string motDePasse;
 
     [ObservableProperty]
-    private bool afficherPopupInscription = true; // Affichage de l'overlay
+    private string connexionEmail; // Email pour la connexion
+
+    [ObservableProperty]
+    private string connexionMotDePasse; // Mot de passe pour la connexion
+
+    [ObservableProperty]
+    private bool afficherPopupInscription = true; // Affichage de la popup d'inscription
     public bool PopupMasquee => !AfficherPopupInscription;
 
     // Surcharge du setter pour mettre à jour la visibilité de l'autre propriété automatiquement
@@ -35,8 +40,6 @@ public partial class MainViewModel : ObservableObject
         // Cette ligne permet de notifier que la valeur de PopupMasquee a changé
         OnPropertyChanged(nameof(PopupMasquee));
     }
-
-
 
     [ObservableProperty]
     private string taskTitle;
@@ -48,7 +51,7 @@ public partial class MainViewModel : ObservableObject
     public MainViewModel(AppDbContext context)
     {
         dbContext = context;
-        LoadTasks();        
+        LoadTasks();
     }
 
     [RelayCommand]
@@ -98,8 +101,44 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    // Méthode pour gérer la connexion
+    [RelayCommand]
+    private async Task Login()
+    {
+        if (string.IsNullOrWhiteSpace(ConnexionEmail) || string.IsNullOrWhiteSpace(ConnexionMotDePasse))
+        {
+            await Application.Current.MainPage.DisplayAlert("Erreur", "Veuillez remplir tous les champs de connexion.", "OK");
+            return;
+        }
 
+        try
+        {
+            // Rechercher l'utilisateur avec l'email et le mot de passe
+            var utilisateur = await dbContext.Utilisateurs
+                .FirstOrDefaultAsync(u => u.Email == ConnexionEmail && u.MotDePasse == ConnexionMotDePasse);
 
+            if (utilisateur == null)
+            {
+                await Application.Current.MainPage.DisplayAlert("Erreur", "Email ou mot de passe incorrect.", "OK");
+                return;
+            }
+
+            // Connexion réussie, masquer la popup d'inscription
+            AfficherPopupInscription = false;
+
+            // Charger les tâches associées à cet utilisateur (si vous souhaitez les filtrer)
+            LoadTasks();
+
+            Console.WriteLine("Utilisateur connecté !");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de la connexion : {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("Erreur", $"Exception : {ex.Message}", "OK");
+        }
+    }
+
+    // Méthode pour charger les tâches
     private async void LoadTasks()
     {
         try
@@ -110,7 +149,7 @@ public partial class MainViewModel : ObservableObject
             Tasks.Clear();
             foreach (var task in tasks)
             {
-                Tasks.Add( task );
+                Tasks.Add(task);
             }
         }
         catch (Exception ex)
@@ -118,7 +157,6 @@ public partial class MainViewModel : ObservableObject
             Console.WriteLine($"Erreur lors du chargement des tâches : {ex.Message}");
         }
     }
-
 
     [RelayCommand]
     private async void AddTask()
@@ -153,8 +191,6 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-
-
     [RelayCommand]
     private async Task ShowDetails(Tache task)
     {
@@ -174,7 +210,7 @@ public partial class MainViewModel : ObservableObject
             await dbContext.SaveChangesAsync();
 
             Tasks.Remove(task);
-        };
+        }
+        ;
     }
-
 }

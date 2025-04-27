@@ -52,17 +52,30 @@
                    WidthRequest="300"
                    VerticalOptions="Center">
 
-                <VerticalStackLayout Spacing="15">
-                    <Label Text="Inscription" FontSize="Large" HorizontalOptions="Center" />
-                    <Entry Placeholder="Nom" Text="{Binding Nom}" />
-                    <Entry Placeholder="Prénom" Text="{Binding Prenom}" />
-                    <Entry Placeholder="Email" Text="{Binding Email}" />
-                    <Entry Placeholder="Mot de passe" Text="{Binding MotDePasse}" IsPassword="True" />
+                <ScrollView>
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="Inscription" FontSize="Large" HorizontalOptions="Center" />
+                        <Entry Placeholder="Nom" Text="{Binding Nom}" />
+                        <Entry Placeholder="Prénom" Text="{Binding Prenom}" />
+                        <Entry Placeholder="Email" Text="{Binding Email}" />
+                        <Entry Placeholder="Mot de passe" Text="{Binding MotDePasse}" IsPassword="True" />
 
-                    <Button Text="S'inscrire"
-                            Command="{Binding AddUtilisateurCommand}" />
+                        <Button Text="S'inscrire"
+                                Command="{Binding AddUtilisateurCommand}" />
 
-                </VerticalStackLayout>
+                        <Label Text="Ou"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+
+                        <!-- Formulaire de connexion -->
+                        <Label Text="Connexion" FontSize="Large" HorizontalOptions="Center" />
+                        <Entry Placeholder="Email" Text="{Binding ConnexionEmail}" />
+                        <Entry Placeholder="Mot de passe" Text="{Binding ConnexionMotDePasse}" IsPassword="True"/>
+
+                        <Button Text="Se connecter"
+                                Command="{Binding LoginCommand}" />
+                    </VerticalStackLayout>
+                </ScrollView>
             </Frame>
         </Grid>
 
