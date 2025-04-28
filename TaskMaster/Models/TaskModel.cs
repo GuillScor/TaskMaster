@@ -19,18 +19,18 @@ public class Tache
     public string Titre { get; set; }
 
     [Column("description")]
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     [Column("DateCreation")]
-    public DateTime DateCreation { get; set; }
+    public DateTime? DateCreation { get; set; }
     [Column("echeance")]
-    public DateTime DateEcheance { get; set; }
+    public DateTime? DateEcheance { get; set; }
     [Column("statut")]
-    public string Statut { get; set; }
+    public string? Statut { get; set; }
     [Column("priorite")]
-    public string Priorite { get; set; }
+    public string? Priorite { get; set; }
     [Column("categorie")]
-    public string Categorie { get; set; }
+    public string? Categorie { get; set; }
 
     [ForeignKey("Projet")]
     [Column("ID_Projet")]

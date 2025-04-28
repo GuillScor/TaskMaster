@@ -43,7 +43,6 @@ namespace TaskMaster.ViewModels
         public MainViewModel(AppDbContext context)
         {
             dbContext = context;
-            LoadTasks();
         }
 
         // ----------- INSCRIPTION -----------
@@ -122,6 +121,7 @@ namespace TaskMaster.ViewModels
                 AfficherPopupInscription = false;
 
                 Console.WriteLine("Utilisateur connecté !");
+
                 LoadTasks();
             }
             catch (Exception ex)
@@ -130,6 +130,7 @@ namespace TaskMaster.ViewModels
                 await Application.Current.MainPage.DisplayAlert("Erreur", $"Exception : {ex.Message}", "OK");
             }
         }
+
 
         // ----------- GESTION DES PROPRIÉTÉS -----------
         partial void OnAfficherPopupInscriptionChanged(bool oldValue, bool newValue)
@@ -144,27 +145,49 @@ namespace TaskMaster.ViewModels
 
         // ----------- TÂCHES -----------
         private async void LoadTasks()
+{
+    try
+    {
+        // Vérifier si l'utilisateur connecté est nul
+        if (UtilisateurConnecte == null)
         {
-            try
-            {
-                if (UtilisateurConnecte == null)
-                    return;
-
-                var tasks = await dbContext.Taches
-                    .Where(t => t.ID_CreePar == UtilisateurConnecte.ID_Utilisateur)
-                    .ToListAsync();
-
-                Tasks.Clear();
-                foreach (var task in tasks)
-                {
-                    Tasks.Add(task);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erreur lors du chargement des tâches : {ex.Message}");
-            }
+            await Application.Current.MainPage.DisplayAlert("Erreur", "Aucun utilisateur connecté.", "OK");
+            return; // Retourner immédiatement si aucun utilisateur connecté
         }
+
+        // Récupérer uniquement les tâches de l'utilisateur connecté
+        var tasks = await dbContext.Taches
+            .Where(t => t.ID_CreePar == UtilisateurConnecte.ID_Utilisateur)
+            .ToListAsync();
+
+        // Vérifier si des tâches ont été récupérées
+        if (tasks.Count == 0)
+        {
+            await Application.Current.MainPage.DisplayAlert("Aucune tâche", "Aucune tâche trouvée pour cet utilisateur.", "OK");
+        }
+
+        Tasks.Clear();
+
+        foreach (var task in tasks)
+        {
+            // Vérifier si les champs peuvent être nuls et les remplacer par des valeurs par défaut
+            task.Titre = task.Titre ?? string.Empty;
+            task.Description = task.Description ?? string.Empty;
+
+            Tasks.Add(task);
+        }
+    }
+    catch (Exception ex)
+    {
+        // En cas d'erreur, afficher un message d'erreur
+        Console.WriteLine($"Erreur lors du chargement des tâches : {ex.Message}");
+        await Application.Current.MainPage.DisplayAlert("Erreur", $"Erreur lors du chargement des tâches : {ex.Message}", "OK");
+    }
+}
+
+
+
+
 
         [RelayCommand]
         private async void AddTask()
@@ -181,12 +204,13 @@ namespace TaskMaster.ViewModels
                 return;
             }
 
+            // Assurez-vous que l'ID_CreePar correspond à l'utilisateur connecté
             var newTask = new Tache
             {
                 Titre = TaskTitle,
                 Description = TaskDescription,
                 ID_CreePar = UtilisateurConnecte.ID_Utilisateur,
-                // Ne pas définir ID_Projet si vous ne souhaitez pas en attribuer un
+                ID_Responsable = UtilisateurConnecte.ID_Utilisateur,
                 ID_Projet = null
             };
 
@@ -214,6 +238,7 @@ namespace TaskMaster.ViewModels
                 await Application.Current.MainPage.DisplayAlert("Erreur", $"Erreur lors de l'ajout de la tâche : {fullMessage}", "OK");
             }
         }
+
 
 
 
