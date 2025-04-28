@@ -13,5 +13,7 @@ public class Etiquette
     [Key]
     public int ID_Etiquette { get; set; }
     public string Nom { get; set; }
-    public virtual ICollection<Tache> Taches { get; set; }
+
+    // Modification ici : collection d'Etiquetted (la table de jointure)
+    public virtual ICollection<Etiquetted> Etiquetteds { get; set; } = new List<Etiquetted>();
 }

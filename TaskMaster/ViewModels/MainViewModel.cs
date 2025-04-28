@@ -5,212 +5,234 @@ using TaskMaster.Models;
 using TaskMaster.Views;
 using TaskMaster.Data;
 using Microsoft.EntityFrameworkCore;
+using System;
 
-namespace TaskMaster.ViewModels;
-
-public partial class MainViewModel : ObservableObject
+namespace TaskMaster.ViewModels
 {
-    private AppDbContext dbContext; // Database
-
-    [ObservableProperty]
-    private string nom;
-
-    [ObservableProperty]
-    private string prenom;
-
-    [ObservableProperty]
-    private string email;
-
-    [ObservableProperty]
-    private string motDePasse;
-
-    [ObservableProperty]
-    private string connexionEmail; // Email pour la connexion
-
-    [ObservableProperty]
-    private string connexionMotDePasse; // Mot de passe pour la connexion
-
-    [ObservableProperty]
-    private bool afficherPopupInscription = true; // Affichage de la popup d'inscription
-    public bool PopupMasquee => !AfficherPopupInscription;
-
-    // Surcharge du setter pour mettre à jour la visibilité de l'autre propriété automatiquement
-    partial void OnAfficherPopupInscriptionChanged(bool oldValue, bool newValue)
+    public partial class MainViewModel : ObservableObject
     {
-        // Cette ligne permet de notifier que la valeur de PopupMasquee a changé
-        OnPropertyChanged(nameof(PopupMasquee));
-    }
+        private readonly AppDbContext dbContext;
 
-    [ObservableProperty]
-    private string taskTitle;
-    [ObservableProperty]
-    private string taskDescription;
+        // Champs de formulaire Inscription
+        [ObservableProperty] private string nom;
+        [ObservableProperty] private string prenom;
+        [ObservableProperty] private string email;
+        [ObservableProperty] private string motDePasse;
 
-    public ObservableCollection<Tache> Tasks { get; set; } = new();
+        // Champs de formulaire Connexion
+        [ObservableProperty] private string connexionEmail;
+        [ObservableProperty] private string connexionMotDePasse;
 
-    public MainViewModel(AppDbContext context)
-    {
-        dbContext = context;
-        LoadTasks();
-    }
+        [ObservableProperty] private Utilisateur utilisateurConnecte;
 
-    [RelayCommand]
-    private async Task AddUtilisateur()
-    {
-        if (string.IsNullOrWhiteSpace(Nom) || string.IsNullOrWhiteSpace(Prenom) ||
-            string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(MotDePasse))
+        // Affichage du popup
+        [ObservableProperty] private bool afficherPopupInscription = true;
+        public bool PopupMasquee => !AfficherPopupInscription;
+
+        // Affichage du nom de l'utilisateur connecté
+        public string NomUtilisateurConnecte => UtilisateurConnecte != null ? $"{UtilisateurConnecte.Prenom} {UtilisateurConnecte.Nom}" : string.Empty;
+
+        [ObservableProperty] private bool isLoggedIn;
+
+        // Champs pour Ajout de Tâche
+        [ObservableProperty] private string taskTitle;
+        [ObservableProperty] private string taskDescription;
+
+        public ObservableCollection<Tache> Tasks { get; set; } = new();
+
+        public MainViewModel(AppDbContext context)
         {
-            await Application.Current.MainPage.DisplayAlert("Erreur", "Veuillez remplir tous les champs.", "OK");
-            return;
+            dbContext = context;
+            LoadTasks();
         }
 
-        try
+        // ----------- INSCRIPTION -----------
+        [RelayCommand]
+        private async Task AddUtilisateur()
         {
-            // Vérifier si l'email est déjà utilisé
-            var existe = await dbContext.Utilisateurs.AnyAsync(u => u.Email == Email);
-            if (existe)
+            if (string.IsNullOrWhiteSpace(Nom) || string.IsNullOrWhiteSpace(Prenom) ||
+                string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(MotDePasse))
             {
-                await Application.Current.MainPage.DisplayAlert("Erreur", "Cet email est déjà utilisé.", "OK");
+                await Application.Current.MainPage.DisplayAlert("Erreur", "Veuillez remplir tous les champs.", "OK");
                 return;
             }
 
-            var utilisateur = new Utilisateur
+            try
             {
-                Nom = Nom,
-                Prenom = Prenom,
-                Email = Email,
-                MotDePasse = MotDePasse
+                var existe = await dbContext.Utilisateurs.AnyAsync(u => u.Email == Email);
+                if (existe)
+                {
+                    await Application.Current.MainPage.DisplayAlert("Erreur", "Cet email est déjà utilisé.", "OK");
+                    return;
+                }
+
+                var utilisateur = new Utilisateur
+                {
+                    Nom = Nom,
+                    Prenom = Prenom,
+                    Email = Email,
+                    MotDePasse = MotDePasse
+                };
+
+                dbContext.Utilisateurs.Add(utilisateur);
+                await dbContext.SaveChangesAsync();
+
+                Console.WriteLine("Utilisateur ajouté !");
+
+                UtilisateurConnecte = utilisateur;
+                IsLoggedIn = true;
+                AfficherPopupInscription = false;
+            }
+            catch (Exception ex)
+            {
+                var fullMessage = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    fullMessage += "\nDétails internes : " + ex.InnerException.Message;
+                }
+
+                Console.WriteLine($"Erreur lors de l'inscription : {fullMessage}");
+                await Application.Current.MainPage.DisplayAlert("Erreur", $"Exception : {fullMessage}", "OK");
+            }
+        }
+
+        // ----------- CONNEXION -----------
+        [RelayCommand]
+        private async Task Login()
+        {
+            if (string.IsNullOrWhiteSpace(ConnexionEmail) || string.IsNullOrWhiteSpace(ConnexionMotDePasse))
+            {
+                await Application.Current.MainPage.DisplayAlert("Erreur", "Veuillez remplir tous les champs de connexion.", "OK");
+                return;
+            }
+
+            try
+            {
+                var utilisateur = await dbContext.Utilisateurs
+                    .FirstOrDefaultAsync(u => u.Email == ConnexionEmail && u.MotDePasse == ConnexionMotDePasse);
+
+                if (utilisateur == null)
+                {
+                    await Application.Current.MainPage.DisplayAlert("Erreur", "Email ou mot de passe incorrect.", "OK");
+                    return;
+                }
+
+                UtilisateurConnecte = utilisateur;
+                IsLoggedIn = true;
+                AfficherPopupInscription = false;
+
+                Console.WriteLine("Utilisateur connecté !");
+                LoadTasks();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de la connexion : {ex.Message}");
+                await Application.Current.MainPage.DisplayAlert("Erreur", $"Exception : {ex.Message}", "OK");
+            }
+        }
+
+        // ----------- GESTION DES PROPRIÉTÉS -----------
+        partial void OnAfficherPopupInscriptionChanged(bool oldValue, bool newValue)
+        {
+            OnPropertyChanged(nameof(PopupMasquee));
+        }
+
+        partial void OnUtilisateurConnecteChanged(Utilisateur oldValue, Utilisateur newValue)
+        {
+            OnPropertyChanged(nameof(NomUtilisateurConnecte));
+        }
+
+        // ----------- TÂCHES -----------
+        private async void LoadTasks()
+        {
+            try
+            {
+                if (UtilisateurConnecte == null)
+                    return;
+
+                var tasks = await dbContext.Taches
+                    .Where(t => t.ID_CreePar == UtilisateurConnecte.ID_Utilisateur)
+                    .ToListAsync();
+
+                Tasks.Clear();
+                foreach (var task in tasks)
+                {
+                    Tasks.Add(task);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors du chargement des tâches : {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        private async void AddTask()
+        {
+            if (string.IsNullOrWhiteSpace(TaskTitle))
+            {
+                await Application.Current.MainPage.DisplayAlert("Erreur", "Le titre de la tâche est requis.", "OK");
+                return;
+            }
+
+            if (UtilisateurConnecte == null)
+            {
+                await Application.Current.MainPage.DisplayAlert("Erreur", "Aucun utilisateur connecté. Veuillez vous connecter.", "OK");
+                return;
+            }
+
+            var newTask = new Tache
+            {
+                Titre = TaskTitle,
+                Description = TaskDescription,
+                ID_CreePar = UtilisateurConnecte.ID_Utilisateur,
+                ID_Responsable = UtilisateurConnecte.ID_Utilisateur
             };
 
-            dbContext.Utilisateurs.Add(utilisateur);
-            await dbContext.SaveChangesAsync();
-
-            Console.WriteLine("Utilisateur ajouté !");
-            AfficherPopupInscription = false;
-        }
-        catch (Exception ex)
-        {
-            var fullMessage = ex.Message;
-            if (ex.InnerException != null)
+            try
             {
-                fullMessage += "\nDétails internes : " + ex.InnerException.Message;
+                dbContext.Taches.Add(newTask);
+                await dbContext.SaveChangesAsync();
+
+                Tasks.Add(newTask);
+
+                TaskTitle = string.Empty;
+                TaskDescription = string.Empty;
+
+                Console.WriteLine("Tâche ajoutée.");
             }
-
-            Console.WriteLine($"Erreur lors de l'inscription : {fullMessage}");
-            await Application.Current.MainPage.DisplayAlert("Erreur", $"Exception : {fullMessage}", "OK");
-        }
-    }
-
-    // Méthode pour gérer la connexion
-    [RelayCommand]
-    private async Task Login()
-    {
-        if (string.IsNullOrWhiteSpace(ConnexionEmail) || string.IsNullOrWhiteSpace(ConnexionMotDePasse))
-        {
-            await Application.Current.MainPage.DisplayAlert("Erreur", "Veuillez remplir tous les champs de connexion.", "OK");
-            return;
-        }
-
-        try
-        {
-            // Rechercher l'utilisateur avec l'email et le mot de passe
-            var utilisateur = await dbContext.Utilisateurs
-                .FirstOrDefaultAsync(u => u.Email == ConnexionEmail && u.MotDePasse == ConnexionMotDePasse);
-
-            if (utilisateur == null)
+            catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Erreur", "Email ou mot de passe incorrect.", "OK");
-                return;
-            }
+                var fullMessage = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    fullMessage += "\nDétails internes : " + ex.InnerException.Message;
+                }
 
-            // Connexion réussie, masquer la popup d'inscription
-            AfficherPopupInscription = false;
-
-            // Charger les tâches associées à cet utilisateur (si vous souhaitez les filtrer)
-            LoadTasks();
-
-            Console.WriteLine("Utilisateur connecté !");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erreur lors de la connexion : {ex.Message}");
-            await Application.Current.MainPage.DisplayAlert("Erreur", $"Exception : {ex.Message}", "OK");
-        }
-    }
-
-    // Méthode pour charger les tâches
-    private async void LoadTasks()
-    {
-        try
-        {
-            Console.WriteLine($"Load tasks");
-            var tasks = await dbContext.Taches.ToListAsync();
-
-            Tasks.Clear();
-            foreach (var task in tasks)
-            {
-                Tasks.Add(task);
+                Console.WriteLine($"Erreur lors de l'ajout de la tâche : {fullMessage}");
+                await Application.Current.MainPage.DisplayAlert("Erreur", $"Erreur lors de l'ajout de la tâche : {fullMessage}", "OK");
             }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erreur lors du chargement des tâches : {ex.Message}");
-        }
-    }
 
-    [RelayCommand]
-    private async void AddTask()
-    {
-        if (string.IsNullOrEmpty(TaskTitle))
+
+        [RelayCommand]
+        private async Task ShowDetails(Tache task)
         {
-            Console.WriteLine("Le titre est requis.");
-            return;
+            if (task != null)
+            {
+                await Shell.Current.Navigation.PushAsync(new TaskDetailPage(task));
+            }
         }
 
-        var newTask = new Tache
+        [RelayCommand]
+        private async void DeleteTask(Tache task)
         {
-            Titre = TaskTitle,
-            Description = TaskDescription
-        };
-
-        try
-        {
-            dbContext.Taches.Add(newTask);
-            await dbContext.SaveChangesAsync();
-
-            Tasks.Add(newTask);
-
-            TaskTitle = string.Empty;
-            TaskDescription = string.Empty;
-
-            Console.WriteLine("Tâche ajoutée.");
+            if (task != null)
+            {
+                dbContext.Taches.Remove(task);
+                await dbContext.SaveChangesAsync();
+                Tasks.Remove(task);
+            }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erreur lors de l'ajout de la tâche : {ex.Message}");
-        }
-    }
-
-    [RelayCommand]
-    private async Task ShowDetails(Tache task)
-    {
-        if (task != null)
-        {
-            // Naviguer vers la page de détails, en passant la tâche sélectionnée
-            await Shell.Current.Navigation.PushAsync(new TaskDetailPage(task));
-        }
-    }
-
-    [RelayCommand]
-    private async void DeleteTask(Tache task)
-    {
-        if (task != null)
-        {
-            dbContext.Taches.Remove(task);
-            await dbContext.SaveChangesAsync();
-
-            Tasks.Remove(task);
-        }
-        ;
     }
 }

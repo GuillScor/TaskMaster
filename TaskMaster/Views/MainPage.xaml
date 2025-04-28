@@ -1,14 +1,31 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:TaskMaster.Converters"
              x:Class="TaskMaster.Views.MainPage"
              x:Name="MainPageRef">
 
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
     <Grid>
 
+        <!-- Affichage du nom en haut à droite -->
+        <Label Text="{Binding NomUtilisateurConnecte}" 
+           FontSize="Medium"
+           TextColor="Black"
+           Margin="0,20,20,0"
+           HorizontalOptions="End"
+           VerticalOptions="Start"
+           IsVisible="{Binding IsLoggedIn}" />
+
         <!-- Interface principale -->
-        <ScrollView IsEnabled="{Binding AfficherPopupInscription}">
+        <ScrollView InputTransparent="{Binding AfficherPopupInscription}">
             <VerticalStackLayout Padding="30,0" Spacing="25">
+
                 <Entry Placeholder="Saisir un titre" Text="{Binding TaskTitle}" />
                 <Entry Placeholder="Saisir une description" Text="{Binding TaskDescription}" />
 
@@ -26,22 +43,24 @@
                                     <Button Text="Détails"
                                             Command="{Binding BindingContext.ShowDetailsCommand, Source={x:Reference MainPageRef}}"
                                             CommandParameter="{Binding .}"
-                                            HorizontalOptions="End"/>
+                                            HorizontalOptions="End" />
                                     <Button Text="Supprimer"
                                             Command="{Binding BindingContext.DeleteTaskCommand, Source={x:Reference MainPageRef}}"
                                             CommandParameter="{Binding .}"
-                                            HorizontalOptions="End"/>
+                                            HorizontalOptions="End" />
                                 </VerticalStackLayout>
                             </Frame>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
+
             </VerticalStackLayout>
         </ScrollView>
 
         <!-- Overlay d'inscription -->
         <Grid BackgroundColor="#AA000000"
               IsVisible="{Binding AfficherPopupInscription}"
+              InputTransparent="{Binding AfficherPopupInscription, Converter={StaticResource InverseBoolConverter}}"
               Padding="30"
               VerticalOptions="Center"
               HorizontalOptions="Center">
@@ -70,13 +89,14 @@
                         <!-- Formulaire de connexion -->
                         <Label Text="Connexion" FontSize="Large" HorizontalOptions="Center" />
                         <Entry Placeholder="Email" Text="{Binding ConnexionEmail}" />
-                        <Entry Placeholder="Mot de passe" Text="{Binding ConnexionMotDePasse}" IsPassword="True"/>
+                        <Entry Placeholder="Mot de passe" Text="{Binding ConnexionMotDePasse}" IsPassword="True" />
 
                         <Button Text="Se connecter"
                                 Command="{Binding LoginCommand}" />
                     </VerticalStackLayout>
                 </ScrollView>
             </Frame>
+
         </Grid>
 
     </Grid>

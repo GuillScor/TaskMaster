@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace TaskMaster.Models;
-[Table("etiquetteds")]
+[Table("attache")]
 public class Etiquetted
 {
     // Supprimer les annotations [Key] ici
