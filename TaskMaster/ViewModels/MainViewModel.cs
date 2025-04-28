@@ -37,7 +37,20 @@ namespace TaskMaster.ViewModels
         // Champs pour Ajout de Tâche
         [ObservableProperty] private string taskTitle;
         [ObservableProperty] private string taskDescription;
+        [ObservableProperty] private DateTime? taskEcheance;
 
+        [ObservableProperty] private string selectedStatut;
+        [ObservableProperty] private string selectedPriorite;
+
+        public ObservableCollection<string> ListeStatuts { get; } = new()
+        {
+            "À faire", "En cours", "Terminé", "Bloqué"
+        };
+
+        public ObservableCollection<string> ListePriorites { get; } = new()
+        {
+            "Basse", "Moyenne", "Haute", "Critique"
+        };
         public ObservableCollection<Tache> Tasks { get; set; } = new();
 
         public MainViewModel(AppDbContext context)
@@ -145,48 +158,40 @@ namespace TaskMaster.ViewModels
 
         // ----------- TÂCHES -----------
         private async void LoadTasks()
-{
-    try
-    {
-        // Vérifier si l'utilisateur connecté est nul
-        if (UtilisateurConnecte == null)
         {
-            await Application.Current.MainPage.DisplayAlert("Erreur", "Aucun utilisateur connecté.", "OK");
-            return; // Retourner immédiatement si aucun utilisateur connecté
+            try
+            {
+                if (UtilisateurConnecte == null)
+                {
+                    await Application.Current.MainPage.DisplayAlert("Erreur", "Aucun utilisateur connecté.", "OK");
+                    return; 
+                }
+
+                var tasks = await dbContext.Taches
+                    .Where(t => t.ID_CreePar == UtilisateurConnecte.ID_Utilisateur)
+                    .ToListAsync();
+
+                if (tasks.Count == 0)
+                {
+                    await Application.Current.MainPage.DisplayAlert("Aucune tâche", "Aucune tâche trouvée pour cet utilisateur.", "OK");
+                }
+
+                Tasks.Clear();
+
+                foreach (var task in tasks)
+                {
+                    task.Titre = task.Titre ?? string.Empty;
+                    task.Description = task.Description ?? string.Empty;
+
+                    Tasks.Add(task);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors du chargement des tâches : {ex.Message}");
+                await Application.Current.MainPage.DisplayAlert("Erreur", $"Erreur lors du chargement des tâches : {ex.Message}", "OK");
+            }
         }
-
-        // Récupérer uniquement les tâches de l'utilisateur connecté
-        var tasks = await dbContext.Taches
-            .Where(t => t.ID_CreePar == UtilisateurConnecte.ID_Utilisateur)
-            .ToListAsync();
-
-        // Vérifier si des tâches ont été récupérées
-        if (tasks.Count == 0)
-        {
-            await Application.Current.MainPage.DisplayAlert("Aucune tâche", "Aucune tâche trouvée pour cet utilisateur.", "OK");
-        }
-
-        Tasks.Clear();
-
-        foreach (var task in tasks)
-        {
-            // Vérifier si les champs peuvent être nuls et les remplacer par des valeurs par défaut
-            task.Titre = task.Titre ?? string.Empty;
-            task.Description = task.Description ?? string.Empty;
-
-            Tasks.Add(task);
-        }
-    }
-    catch (Exception ex)
-    {
-        // En cas d'erreur, afficher un message d'erreur
-        Console.WriteLine($"Erreur lors du chargement des tâches : {ex.Message}");
-        await Application.Current.MainPage.DisplayAlert("Erreur", $"Erreur lors du chargement des tâches : {ex.Message}", "OK");
-    }
-}
-
-
-
 
 
         [RelayCommand]
@@ -204,11 +209,14 @@ namespace TaskMaster.ViewModels
                 return;
             }
 
-            // Assurez-vous que l'ID_CreePar correspond à l'utilisateur connecté
             var newTask = new Tache
             {
                 Titre = TaskTitle,
                 Description = TaskDescription,
+                DateCreation = DateTime.Now,
+                DateEcheance = DateTime.Now.AddDays(7), // (par défaut à une semaine si tu veux, sinon tu pourras ajouter une saisie plus tard)
+                Statut = SelectedStatut,
+                Priorite = SelectedPriorite,
                 ID_CreePar = UtilisateurConnecte.ID_Utilisateur,
                 ID_Responsable = UtilisateurConnecte.ID_Utilisateur,
                 ID_Projet = null
@@ -221,25 +229,18 @@ namespace TaskMaster.ViewModels
 
                 Tasks.Add(newTask);
 
+                // Reset des champs
                 TaskTitle = string.Empty;
                 TaskDescription = string.Empty;
-
-                Console.WriteLine("Tâche ajoutée.");
+                SelectedStatut = null;
+                SelectedPriorite = null;
             }
             catch (Exception ex)
             {
-                var fullMessage = ex.Message;
-                if (ex.InnerException != null)
-                {
-                    fullMessage += "\nDétails internes : " + ex.InnerException.Message;
-                }
-
-                Console.WriteLine($"Erreur lors de l'ajout de la tâche : {fullMessage}");
-                await Application.Current.MainPage.DisplayAlert("Erreur", $"Erreur lors de l'ajout de la tâche : {fullMessage}", "OK");
+                Console.WriteLine($"Erreur lors de l'ajout de la tâche : {ex.Message}");
+                await Application.Current.MainPage.DisplayAlert("Erreur", $"Erreur lors de l'ajout de la tâche : {ex.Message}", "OK");
             }
         }
-
-
 
 
 

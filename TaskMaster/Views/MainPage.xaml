@@ -28,6 +28,14 @@
 
                 <Entry Placeholder="Saisir un titre" Text="{Binding TaskTitle}" />
                 <Entry Placeholder="Saisir une description" Text="{Binding TaskDescription}" />
+                <DatePicker Date="{Binding TaskEcheance}" />
+                <Picker Title="Sélectionner un statut"
+                ItemsSource="{Binding ListeStatuts}"
+                SelectedItem="{Binding SelectedStatut}" />
+                <Picker Title="Sélectionner une priorité"
+                ItemsSource="{Binding ListePriorites}"
+                SelectedItem="{Binding SelectedPriorite}" />
+
 
                 <Button Text="Ajouter une tâche"
                         Command="{Binding AddTaskCommand}"
