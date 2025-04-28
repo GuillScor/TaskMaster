@@ -186,7 +186,8 @@ namespace TaskMaster.ViewModels
                 Titre = TaskTitle,
                 Description = TaskDescription,
                 ID_CreePar = UtilisateurConnecte.ID_Utilisateur,
-                ID_Responsable = UtilisateurConnecte.ID_Utilisateur
+                // Ne pas définir ID_Projet si vous ne souhaitez pas en attribuer un
+                ID_Projet = null
             };
 
             try
@@ -213,6 +214,8 @@ namespace TaskMaster.ViewModels
                 await Application.Current.MainPage.DisplayAlert("Erreur", $"Erreur lors de l'ajout de la tâche : {fullMessage}", "OK");
             }
         }
+
+
 
 
         [RelayCommand]
