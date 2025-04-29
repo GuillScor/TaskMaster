@@ -1,37 +1,111 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:TaskMaster.Converters"
              x:Class="TaskMaster.Views.MainPage"
              x:Name="MainPageRef">
-    <ScrollView>
-        <VerticalStackLayout Padding="30,0" Spacing="25">
-            <Entry Placeholder="Saisir un titre" Text="{Binding TaskTitle}"/>
-            <Entry Placeholder="Saisir une description" Text="{Binding TaskDescription}"/>
-            
-            <Button Text="Ajouter une tâche"
-                    Command="{Binding AddTaskCommand}"
-                    HorizontalOptions="Fill" />
 
-            <CollectionView ItemsSource="{Binding Tasks}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Frame BorderColor="Gray" Padding="10" Margin="5">
-                            <VerticalStackLayout>
-                                <Label Text="{Binding Title}" FontSize="Medium" />
-                                <Label Text="{Binding Description}" FontSize="Small" />
-                                <Button Text="Détails"
-                                Command="{Binding BindingContext.ShowDetailsCommand, Source={x:Reference MainPageRef}}"
-                                CommandParameter="{Binding .}"
-                                HorizontalOptions="End"/>
-                                <Button Text="Supprimer"
-                                Command="{Binding BindingContext.DeleteTaskCommand, Source={x:Reference MainPageRef}}"
-                                CommandParameter="{Binding .}"
-                                HorizontalOptions="End"/>
-                            </VerticalStackLayout>
-                        </Frame>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </VerticalStackLayout>
-    </ScrollView>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid>
+
+        <!-- Affichage du nom en haut à droite -->
+        <Label Text="{Binding NomUtilisateurConnecte}" 
+           FontSize="Medium"
+           TextColor="Black"
+           Margin="0,20,20,0"
+           HorizontalOptions="End"
+           VerticalOptions="Start"
+           IsVisible="{Binding IsLoggedIn}" />
+
+        <!-- Interface principale -->
+        <ScrollView InputTransparent="{Binding AfficherPopupInscription}">
+            <VerticalStackLayout Padding="30,0" Spacing="25">
+
+                <Entry Placeholder="Saisir un titre" Text="{Binding TaskTitle}" />
+                <Entry Placeholder="Saisir une description" Text="{Binding TaskDescription}" />
+                <DatePicker Date="{Binding TaskEcheance}" />
+                <Picker Title="Sélectionner un statut"
+                ItemsSource="{Binding ListeStatuts}"
+                SelectedItem="{Binding SelectedStatut}" />
+                <Picker Title="Sélectionner une priorité"
+                ItemsSource="{Binding ListePriorites}"
+                SelectedItem="{Binding SelectedPriorite}" />
+
+
+                <Button Text="Ajouter une tâche"
+                        Command="{Binding AddTaskCommand}"
+                        HorizontalOptions="Fill" />
+
+                <CollectionView ItemsSource="{Binding Tasks}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame BorderColor="Gray" Padding="10" Margin="5">
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Titre}" FontSize="Medium" />
+                                    <Label Text="{Binding Description}" FontSize="Small" />
+                                    <Button Text="Détails"
+                                            Command="{Binding BindingContext.ShowDetailsCommand, Source={x:Reference MainPageRef}}"
+                                            CommandParameter="{Binding .}"
+                                            HorizontalOptions="End" />
+                                    <Button Text="Supprimer"
+                                            Command="{Binding BindingContext.DeleteTaskCommand, Source={x:Reference MainPageRef}}"
+                                            CommandParameter="{Binding .}"
+                                            HorizontalOptions="End" />
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Overlay d'inscription -->
+        <Grid BackgroundColor="#AA000000"
+              IsVisible="{Binding AfficherPopupInscription}"
+              InputTransparent="{Binding AfficherPopupInscription, Converter={StaticResource InverseBoolConverter}}"
+              Padding="30"
+              VerticalOptions="Center"
+              HorizontalOptions="Center">
+
+            <Frame BackgroundColor="White"
+                   CornerRadius="10"
+                   Padding="20"
+                   WidthRequest="300"
+                   VerticalOptions="Center">
+
+                <ScrollView>
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="Inscription" FontSize="Large" HorizontalOptions="Center" />
+                        <Entry Placeholder="Nom" Text="{Binding Nom}" />
+                        <Entry Placeholder="Prénom" Text="{Binding Prenom}" />
+                        <Entry Placeholder="Email" Text="{Binding Email}" />
+                        <Entry Placeholder="Mot de passe" Text="{Binding MotDePasse}" IsPassword="True" />
+
+                        <Button Text="S'inscrire"
+                                Command="{Binding AddUtilisateurCommand}" />
+
+                        <Label Text="Ou"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+
+                        <!-- Formulaire de connexion -->
+                        <Label Text="Connexion" FontSize="Large" HorizontalOptions="Center" />
+                        <Entry Placeholder="Email" Text="{Binding ConnexionEmail}" />
+                        <Entry Placeholder="Mot de passe" Text="{Binding ConnexionMotDePasse}" IsPassword="True" />
+
+                        <Button Text="Se connecter"
+                                Command="{Binding LoginCommand}" />
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Frame>
+
+        </Grid>
+
+    </Grid>
 </ContentPage>

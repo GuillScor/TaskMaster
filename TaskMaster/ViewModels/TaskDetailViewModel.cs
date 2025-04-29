@@ -14,9 +14,9 @@ namespace TaskMaster.ViewModels;
 public partial class TaskDetailViewModel : ObservableObject
 {
     [ObservableProperty]
-    private TaskModel task;
+    private Tache task;
 
-    public TaskDetailViewModel(TaskModel task)
+    public TaskDetailViewModel(Tache task)
     {
         Task = task;
     }

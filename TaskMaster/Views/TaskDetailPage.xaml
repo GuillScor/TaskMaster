@@ -6,10 +6,22 @@
 
     <VerticalStackLayout Padding="20" Spacing="20">
         <Label Text="Titre :" FontSize="16" FontAttributes="Bold" />
-        <Label Text="{Binding Task.Title}" FontSize="20" />
+        <Label Text="{Binding Task.Titre}" FontSize="20" />
 
         <Label Text="Description :" FontSize="16" FontAttributes="Bold" />
         <Label Text="{Binding Task.Description}" FontSize="18" />
+
+        <Label Text="Date de création :" FontSize="16" FontAttributes="Bold" />
+        <Label Text="{Binding Task.DateCreation}" FontSize="18" />
+
+        <Label Text="Date d'échéance :" FontSize="16" FontAttributes="Bold" />
+        <Label Text="{Binding Task.DateEcheance}" FontSize="18" />
+
+        <Label Text="Statut :" FontSize="16" FontAttributes="Bold" />
+        <Label Text="{Binding Task.Statut}" FontSize="18" />
+
+        <Label Text="Priorité :" FontSize="16" FontAttributes="Bold" />
+        <Label Text="{Binding Task.Priorite}" FontSize="18" />
 
         <Button Text="Retour" Command="{Binding ReturnCommand}" />
     </VerticalStackLayout>
